@@ -32,4 +32,10 @@ url: clickhouse
 
 # 二、clickhouse 的部署
 
+
+
+
+
+
+
 ## 三、clickhouse的基本类型与语法
