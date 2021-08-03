@@ -2,8 +2,8 @@
 title: curl命令详解与实战
 toc: true
 date: 2021-07-29 09:52:47
-tags:工具
-url: curl
+tags: 工具
+url: curl-command
 ---
 
 curl 是常用的命令行工具，用来请求 Web 服务器。它的名字就是客户端（client）的 URL 工具的意思。
