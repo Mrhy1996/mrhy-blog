@@ -10,7 +10,7 @@ url: docker-command
 
 <!-- more -->
 
-## docker 命令大全
+# Docker 命令大全
 
 ## 帮助命令
 
@@ -609,11 +609,213 @@ docker run -d -p 3306:3306 --name mysql-master -v=/Users/mrhy/environment/mysql/
 
 -v 指的挂载当前文件: 容器内部文件
 
+# DockerFile
+
+dockerFile 核心是用来构建docker的镜像的文件，是命令参数脚本
+
+构建步骤
+
+1. 编写一个dockerfile文件
+2. docker build 构建成为一个镜像
+3. docker run 运行镜像
+4. 发布到dockerhub 或者阿里云
+
+## Dockerfile构建过程
+
+基础知识
+
+1. 每个指令都必须是大写字母
+2. 执行从上到下的顺序
+3. #表示注释
+4. 每一个指令都会创建一个新的镜像层，并提交
+
+![image-20210815150436451](docker基本命令/image-20210815150436451.png)
+
+dockerfile是面向开发的
+
+DockerFile：构建文件，定义了一切的步骤。
+
+DockerImages：通过DockerFile构建出来的镜像
+
+DockerContainer：Docker镜像的实例
+
+## DockerFile的指令
+
+![image-20210815150841295](docker基本命令/image-20210815150841295.png)
 
 
 
+todo  补全注释
 
-## docker技巧
+```shell
+FROM #基础镜像，一切开始的源头
+MAINTAINER #镜像是谁写的，姓名+邮箱
+RUN        #镜像构建的时候需要运行的命令
+ADD        #
+WORKDIR    # 
+VOLUME     # 挂载的目录
+EXPOST     # 保留端口配置
+CMD        
+ENTRYPOINT
+ONBUILD
+COPY
+ENV
+```
+
+## 实战1 Centos
+
+截取一张centos7的dockerfile，然后按照他的格式去写
+
+![image-20210815154844881](docker基本命令/image-20210815154844881.png)
+
+在此基础上，写自己的dockerfile
+
+```dockerfile
+FROM centos
+MAINTAINER mrhy<1923589540@qq.com>
+ENV MYPATH /usr/local
+WORKDIR $MYPATH
+RUN yum -y install vim
+RUN yum -y install net-tools
+
+EXPOSE 80
+
+CMD echo $MYPATH
+CMD echo "----end----"
+CMD /bin/bash
+```
+
+构建dockerfile镜像
+
+```shell
+docker build -f MyCentos7 -t mycentos:0.1 .   #注意最后这个点，表示当前路径
+```
+
+构建容器
+
+```shell
+docker run -it mycentos:0.1
+```
+
+这样一个新的centos7的镜像和容器就诞生了
+
+> 查看一个镜像的构建过程
+
+```shell
+➜  ~ docker images
+REPOSITORY                  TAG                                                     IMAGE ID       CREATED         SIZE
+mycentos                    0.1                                                     46ccf0eb330b   9 minutes ago   292MB
+yandex/clickhouse-server    latest                                                  47415eaf3a8d   5 days ago      683MB
+zookeeper                   latest                                                  2e2f6a1661fd   3 weeks ago     270MB
+redis                       latest                                                  08502081bff6   7 weeks ago     105MB
+docker/desktop-kubernetes   kubernetes-v1.21.2-cni-v0.8.5-critools-v1.17.0-debian   a502c6d66bd7   8 weeks ago     299MB
+wurstmeister/kafka          latest                                                  c3b059ede60e   2 months ago    507MB
+➜  ~ docker history 46ccf0eb330b #查看一个镜像的构建过程
+IMAGE          CREATED          CREATED BY                                      SIZE      COMMENT
+46ccf0eb330b   9 minutes ago    CMD ["/bin/sh" "-c" "/bin/bash"]                0B        buildkit.dockerfile.v0
+<missing>      9 minutes ago    CMD ["/bin/sh" "-c" "echo \"----end----\""]     0B        buildkit.dockerfile.v0
+<missing>      9 minutes ago    CMD ["/bin/sh" "-c" "echo $MYPATH"]             0B        buildkit.dockerfile.v0
+<missing>      9 minutes ago    EXPOSE map[80/tcp:{}]                           0B        buildkit.dockerfile.v0
+<missing>      9 minutes ago    RUN /bin/sh -c yum -y install net-tools # bu…   14.4MB    buildkit.dockerfile.v0
+<missing>      9 minutes ago    RUN /bin/sh -c yum -y install vim # buildkit    68.1MB    buildkit.dockerfile.v0
+<missing>      10 minutes ago   WORKDIR /usr/local                              0B        buildkit.dockerfile.v0
+<missing>      10 minutes ago   ENV MYPATH=/usr/local                           0B        buildkit.dockerfile.v0
+<missing>      10 minutes ago   MAINTAINER mrhy<1923589540@qq.com>              0B        buildkit.dockerfile.v0
+<missing>      8 months ago     /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B
+<missing>      8 months ago     /bin/sh -c #(nop)  LABEL org.label-schema.sc…   0B
+<missing>      8 months ago     /bin/sh -c #(nop) ADD file:bd7a2aed6ede423b7…   209MB
+```
+
+## 实战2 Tomcat
+
+1. 准备文件
+
+   ![image-20210817110808464](docker基本命令/image-20210817110808464.png)
+
+2. 创建Dockerfile
+
+   ```dockerfile
+   FROM centos
+   LABEL author="mrhy<mrhy1996@qq.com>"
+   
+   COPY readme.txt /usr/local/readme.txt
+   
+   
+   ADD apache-tomcat-8.5.69.tar.gz /usr/local/
+   ADD jdk-8u291-linux-x64.tar.gz /usr/local/
+   
+   
+   RUN yum -y install vim
+   
+   
+   ENV MYPATH=/usr/local/
+   WORKDIR ${MYPATH}
+   
+   ENV JAVA_HOME /usr/local/jdk1.8.0_291
+   
+   ENV CLASS_HOME $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+   
+   ENV CATALINA_HOME  /usr/local/apache-tomcat-8.5.69
+   
+   ENV CATALINA_BASH  /usr/local/apache-tomcat-8.5.69
+   
+   ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/lib:$CATALINA_HOME/bin
+   
+   
+   EXPOSE 8080
+   
+   CMD /usr/local/apache-tomcat-8.5.69/bin/startup.sh && tail -F /usr/local/apache-tomcat-8.5.69/logs/catalina.out
+   ```
+
+3. 构建镜像
+
+   ```shell
+   docker build -t mrhytomcat8:0.1 .
+   ```
+
+4. 查看docker镜像
+
+   ```shell
+   docker images
+   ```
+
+   发现自己刚发布的镜像
+
+   ![image-20210817113614341](docker基本命令/image-20210817113614341.png)
+
+5. 生成容器
+
+   ```shell
+   docker run -itd -p 9090:8080 -v /Users/cooper/Projects/Cooper/DockerFiles/Tomcat8/webapps:/usr/local/apache-tomcat-8.5.69/webapps -v /Users/cooper/Projects/Cooper/DockerFiles/Tomcat8/logs:/usr/local/apache-tomcat-8.5.69/logs --name mrhytomcat8 mrhytomcat8:0.1
+   ```
+
+6. 访问
+
+   ![image-20210818220617287](docker基本命令/image-20210818220617287.png)
+
+## 发布自己的DockerFile
+
+1. 地址：https://hub.docker.com/
+
+2. 创建自己的账号
+
+3. 在我们的服务器上提交自己的镜像
+
+   ![image-20210818221255767](docker基本命令/image-20210818221255767.png)
+
+4. 登录完成后就能发布 
+
+   ```shell
+   docker push mrhy1996/mrhytomcat8:1.0
+   ```
+
+# Docker网络
+
+## 理解Docker0
+
+
+
+# Docker技巧
 
 > docker容器访问宿主机的地址
 
