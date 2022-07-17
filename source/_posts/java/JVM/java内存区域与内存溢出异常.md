@@ -66,8 +66,6 @@ static  final Class模板、常量池
 * Jdk1.7 :去永久代，常量池在堆中
 * Jdk1.8 ：元空间，常量池在元空间中
 
-<img src="/Users/mrhy/Library/Application Support/typora-user-images/image-20210305095105466.png" alt="image-20210305095105466" style="zoom:50%;" />
-
 GC
 
 GC两种类型：轻GC，
@@ -86,8 +84,6 @@ GC算法
 # 类加载器
 
 ==class 是抽象的，用new 关键字出来的才是具体的类。==
-
-<img src="/Users/mrhy/Library/Application Support/typora-user-images/image-20201126213231723.png" alt="image-20201126213231723" style="zoom:50%;" />
 
 ## 作用
 
@@ -137,3 +133,33 @@ JNI作用：拓展java使用，融合不同语言为java所用
 1. HotSpot （sun公司）
 2. BEA JRockit
 3. IBM J9 Vm
+
+# JVM垃圾
+
+## 什么是垃圾
+
+凡是在jvm中不被引用的对象均是垃圾
+
+## 如何判定垃圾，常见的算法
+
+1. 计数法
+
+   弊端：无法找出相互引用的
+
+2. 根可达法
+
+   根：![image-20211103222654822](java内存区域与内存溢出异常/image-20211103222654822.png)
+
+## 垃圾清除常用的算法
+
+1. 标记清除
+
+   算法比较简单，会进行两边扫描，有碎片
+
+2. 复制算法（copy）
+
+   空间浪费，移动复制对象，需要调整对象引用
+
+3. 标记压缩
+
+## 栈上分配
